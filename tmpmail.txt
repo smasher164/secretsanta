@@ -1,0 +1,5 @@
+From: {{.From}}
+To: {{.To}}
+Subject: Your Secret Santa!
+
+Your Secret Santa is {{.Name}}.

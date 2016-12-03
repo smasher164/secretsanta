@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Secret Santa</title>
+	<style>
+		body {
+			margin: auto 1em;
+		}
+		table, td, tr {
+			border: 1px solid black;
+		}
+		* {
+			margin-bottom: .5em;
+		}
+	</style>
+</head>
+<body>
+	<h1>Secret Santa</h1>
+	<form class="person">
+		Name:
+		<input type="text">
+		Email:
+		<input type="text">
+		<input type="submit" value="Add Person">
+	</form>
+	<table class="people">
+		<tbody>
+			<tr>
+			</tr>
+			<tr>
+			</tr>
+		</tbody>
+	</table>
+	<button class="santa">Secret Santa!</button>
+	<div class="dispsanta"></div>
+<script src="{{.}}static/main.js"></script>
+</body>
+</html>
