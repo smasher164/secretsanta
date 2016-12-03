@@ -13,6 +13,7 @@ import (
 	"net/smtp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -46,7 +47,7 @@ func (ss *SantaServer) rootHandler(rw http.ResponseWriter, req *http.Request) {
 }
 func (ss *SantaServer) postHandler(rw http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
-	if dec.Decode(&ss.people); ss.err != nil {
+	if ss.err = dec.Decode(&ss.people); ss.err != nil {
 		rw.Header().Set("Santa-Mail-Status", "Invalid Request")
 		return
 	}
@@ -84,7 +85,8 @@ func (ss *SantaServer) secretsanta() {
 	sort.Sort(ByID(ss.people))
 }
 
-func (ss *SantaServer) sendEmail(p Person) error {
+func (ss *SantaServer) sendEmail(wg *sync.WaitGroup, p Person) error {
+	defer wg.Done()
 	c, err := smtp.Dial("smtp.gmail.com:587")
 	if err != nil {
 		return err
@@ -131,22 +133,12 @@ func (ss *SantaServer) sendEmail(p Person) error {
 }
 
 func (ss *SantaServer) sendAll() {
-	errCh := make(chan error)
-	for _, p := range ss.people {
-		go func(person Person) {
-			errCh <- ss.sendEmail(person)
-		}(p)
+	var wg sync.WaitGroup
+	for i := range ss.people {
+		wg.Add(1)
+		go ss.sendEmail(&wg, ss.people[i])
 	}
-	for i := 0; i < len(ss.people); i++ {
-		select {
-		case ss.err = <-errCh:
-			if ss.err != nil {
-				// should cancel all
-				close(errCh)
-				return
-			}
-		}
-	}
+	wg.Wait()
 }
 
 func main() {
