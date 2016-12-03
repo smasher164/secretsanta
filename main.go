@@ -87,12 +87,17 @@ func (ss *SantaServer) secretsanta() {
 
 func (ss *SantaServer) sendEmail(wg *sync.WaitGroup, p Person) error {
 	defer wg.Done()
-	c, err := smtp.Dial("smtp.gmail.com:587")
+	const address = "smtp.gmail.com:587"
+	conn, err := net.Dial("tcp4", address)
+	if err != nil {
+		return err
+	}
+	host, _, _ := net.SplitHostPort(address)
+	c, err := smtp.NewClient(conn, host)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
-	host, _, _ := net.SplitHostPort("smtp.gmail.com:587")
 	if err = c.Hello(host); err != nil {
 		return err
 	}
